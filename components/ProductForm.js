@@ -3,9 +3,11 @@ import { useRouter } from "next/router";
 import axios from "axios";
 
 export default function ProductForm({
+    _id,
     title: existingTitle,
     description: existingDescription,
-    price: existingPrice
+    price: existingPrice,
+    images
 }) {
     const router = useRouter();
 
@@ -15,12 +17,15 @@ export default function ProductForm({
 
     async function handleSubmit(e) {
         e.preventDefault();
+        const data = {title, description, price};
         if (_id) {
             //update
+            await axios.put('/api/products', {...data,_id});
+            router.push('/products');
+        } else {
+            axios.post('/api/products', data);
+            router.push('/products');
         }
-        const data = {title, description, price};
-        axios.post('/api/products', data);
-        router.push('/products');
     }
     
     useEffect(() => {
@@ -36,6 +41,12 @@ export default function ProductForm({
                 value={title} 
                 onChange={e => setTitle(e.target.value)}
             />
+            <label>Images</label>
+            <div className="mb-2">
+                {!images?.length && (
+                    <div>No images in this product</div>
+                )}
+            </div>
             <label>Description</label>
             <textarea 
                 placeholder="Product description" 

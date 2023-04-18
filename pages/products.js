@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 import Link from "next/link";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { BiEdit } from "react-icons/bi";
+import { BiEdit, BiTrash } from "react-icons/bi";
 
 export default function Products() {
     const [products, setProducts] = useState(null);
@@ -37,6 +37,10 @@ export default function Products() {
                                 <Link href={'/products/edit/'+product._id}>
                                     <BiEdit />
                                     Edit
+                                </Link>
+                                <Link href={'/products/delete/'+product._id}>
+                                    <BiTrash />
+                                    Delete
                                 </Link>
                             </td>
                         </tr>
