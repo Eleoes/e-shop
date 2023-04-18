@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
+import { BiUpload } from "react-icons/bi";
+
 
 export default function ProductForm({
     _id,
     title: existingTitle,
     description: existingDescription,
     price: existingPrice,
-    images
+    images,
 }) {
     const router = useRouter();
 
@@ -23,11 +25,24 @@ export default function ProductForm({
             await axios.put('/api/products', {...data,_id});
             router.push('/products');
         } else {
-            axios.post('/api/products', data);
+            await axios.post('/api/products', data);
             router.push('/products');
         }
     }
     
+    async function uploadImages(e) {
+        // console.log(e);
+        const files = e.target?.files;
+        if (files?.length > 0) {
+            const data = new FormData();
+            for (const file of files) {
+                data.append('file', file);
+            }
+            const res = await axios.post('/api/upload', data);
+            console.log(res.data);
+        }
+    }
+
     useEffect(() => {
         router.prefetch('/products');
     }, [router]);
@@ -43,6 +58,11 @@ export default function ProductForm({
             />
             <label>Images</label>
             <div className="mb-2">
+                <label className="w-24 h-24 flex flex-col gap-1 items-center justify-center text-gray-500 rounded-lg cursor-pointer bg-gray-200">
+                    <BiUpload />
+                    <span className="text-sm">Upload</span>
+                    <input type="file" onChange={uploadImages}className="hidden"/> 
+                </label>
                 {!images?.length && (
                     <div>No images in this product</div>
                 )}

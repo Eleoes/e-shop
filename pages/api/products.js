@@ -7,29 +7,36 @@ export default async function handler(req, res) {
 
     if(method === 'GET') {
         if (req.query?.id) {
-            res.json(await Product.findOne({_id:req.query.id}))
+            const product = await Product.findOne({_id:req.query.id});
+            return res.json(product);
         }
-        res.json(await Product.find());
+        const products = await Product.find();
+        return res.json(products);
     }
 
     if(method === 'POST') {
-        const {title,description,price} = req.body;
+        const {title,description,images,price} = req.body;
         const productDoc = await Product.create({
-            title,description,price
+            title,
+            description,
+            images,
+            price,
         })
-        res.json(productDoc);
+        return res.json(productDoc);
     }
     
     if(method === 'PUT') {
-        const {title,description,price,_id} = req.body;
-        await Product.updateOne({_id}, {title,description,price});
-        res.json(true);
+        const {title,description,images,price,_id} = req.body;
+        await Product.updateOne({_id}, {title,description,images,price});
+        return res.json(true);
     }
 
     if(method === 'DELETE') {
         if (req.query?.id){
             await Product.deleteOne({_id:req.query?.id});
-            res.json(true);
+            return res.json(true);
         }
     }
+
+    return res.status(404).send("Not found");
 }
