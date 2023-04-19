@@ -2,24 +2,27 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { BiUpload } from "react-icons/bi";
-
+import Spinner from "@/components/Spinner";
+import { ReactSortable } from "react-sortablejs";
 
 export default function ProductForm({
     _id,
     title: existingTitle,
     description: existingDescription,
     price: existingPrice,
-    images,
+    images: existingImages,
 }) {
     const router = useRouter();
 
     const [title, setTitle] = useState(existingTitle || '');
     const [description, setDescription] = useState(existingDescription || '');
     const [price, setPrice] = useState(existingPrice || '');
+    const [images, setImages] = useState(existingImages || []);
+    const [isUploading, setIsUploading] = useState(false);
 
     async function handleSubmit(e) {
         e.preventDefault();
-        const data = {title, description, price};
+        const data = {title, description, price, images};
         if (_id) {
             //update
             await axios.put('/api/products', {...data,_id});
@@ -34,13 +37,22 @@ export default function ProductForm({
         // console.log(e);
         const files = e.target?.files;
         if (files?.length > 0) {
+            setIsUploading(true);
             const data = new FormData();
             for (const file of files) {
                 data.append('file', file);
             }
             const res = await axios.post('/api/upload', data);
-            console.log(res.data);
+            setImages(oldImages => {
+                return [...oldImages, ...res.data.links];
+            });
+            setIsUploading(false);
         }
+    }
+
+    function updateImagesOrder(images) {
+        // console.log(images);
+        setImages(images);
     }
 
     useEffect(() => {
@@ -57,15 +69,28 @@ export default function ProductForm({
                 onChange={e => setTitle(e.target.value)}
             />
             <label>Images</label>
-            <div className="mb-2">
+            <div className="mb-2 flex flex-wrap gap-1">
+                <ReactSortable 
+                    list={images} 
+                    setList={updateImagesOrder}
+                    className="flex flex-wrap gap-1"
+                >
+                    {!!images?.length && images.map(link => (
+                        <div key={link} className="h-24">
+                            <img src={link} alt="" className="rounded-lg"/>
+                        </div>
+                    ))}
+                </ReactSortable>
+                {isUploading && (
+                    <div className="h-24 p-1 flex items-center">
+                        <Spinner />
+                    </div>
+                )}
                 <label className="w-24 h-24 flex flex-col gap-1 items-center justify-center text-gray-500 rounded-lg cursor-pointer bg-gray-200">
                     <BiUpload />
                     <span className="text-sm">Upload</span>
                     <input type="file" onChange={uploadImages}className="hidden"/> 
                 </label>
-                {!images?.length && (
-                    <div>No images in this product</div>
-                )}
             </div>
             <label>Description</label>
             <textarea 
