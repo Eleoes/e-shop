@@ -11,6 +11,7 @@ export default function ProductForm({
     description: existingDescription,
     price: existingPrice,
     images: existingImages,
+    category: assignedCategory,
 }) {
     const router = useRouter();
 
@@ -19,10 +20,12 @@ export default function ProductForm({
     const [price, setPrice] = useState(existingPrice || '');
     const [images, setImages] = useState(existingImages || []);
     const [isUploading, setIsUploading] = useState(false);
+    const [category, setCategory] = useState(assignedCategory || '');
+    const [categories, setCategories] = useState([]);
 
     async function handleSubmit(e) {
         e.preventDefault();
-        const data = {title, description, price, images};
+        const data = {title, description, price, images, category};
         if (_id) {
             //update
             await axios.put('/api/products', {...data,_id});
@@ -55,6 +58,12 @@ export default function ProductForm({
         setImages(images);
     }
 
+    useEffect(()=> {
+        axios.get('/api/categories').then(result => {
+            setCategories(result.data);
+        })
+    }, []);
+
     useEffect(() => {
         router.prefetch('/products');
     }, [router]);
@@ -68,6 +77,13 @@ export default function ProductForm({
                 value={title} 
                 onChange={e => setTitle(e.target.value)}
             />
+            <label>Category</label>
+            <select value={category} onChange={e => setCategory(e.target.value)}>
+                <option value="">Uncategorized</option>
+                {categories?.length > 0 && categories.map(category=> (
+                    <option key={category._id} value={category._id}>{category.name}</option>
+                ))}
+            </select>
             <label>Images</label>
             <div className="mb-2 flex flex-wrap gap-1">
                 <ReactSortable 
