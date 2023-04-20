@@ -1,8 +1,9 @@
 import Layout from "@/components/Layout";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { withSwal } from "react-sweetalert2";
 
-export default function Categories() {
+function Categories({swal}) {
     const [isEditing, setIsEditing] = useState(null);
     const [name, setName] = useState('');
     const [parentCategory, setParentCategory] = useState('');
@@ -23,10 +24,11 @@ export default function Categories() {
         const data = {name, parentCategory};
 
         if (isEditing) {
+            data._id = isEditing._id;
             await axios.put('/api/categories', data);
             setIsEditing(null);
         } else {
-            await axios.post('/api/categories',data );
+            await axios.post('/api/categories',data);
         }
         setName('');
         setParentCategory('');
@@ -37,6 +39,24 @@ export default function Categories() {
         setIsEditing(category);
         setName(category.name);
         setParentCategory(category.parent?._id);
+    }
+
+    function deleteCategory(category){
+        swal.fire({
+            title: 'Are you sure?',
+            text: `Do you want to delete ${category.name}?`,
+            showCancelButton: true,
+            cancelButtonText: 'Cancel',
+            confirmButtonText: 'Yes, Delete!',
+            confirmButtonColor: '#d55',
+            reverseButtons: true,
+        }).then(async result => {
+            if (result.isConfirmed) {
+            const {_id} = category;
+            await axios.delete('/api/categories?_id='+_id);
+            fetchCategories();
+            }
+        });
     }
     
     return (
@@ -83,7 +103,9 @@ export default function Categories() {
                                 >
                                     Edit
                                 </button>
-                                <button className="btn-primary">Delete</button>
+                                <button 
+                                    onClick={()=> deleteCategory(category)}
+                                    className="btn-primary">Delete</button>
                             </td>
                         </tr>
                     ))}
@@ -91,4 +113,8 @@ export default function Categories() {
             </table>
         </Layout>
     );
-}
+};
+
+export default withSwal(({swal}, ref) => (
+    <Categories swal={swal} />
+));
