@@ -1,4 +1,4 @@
-import { BiStore, BiHomeAlt, BiCog, BiListUl, BiPackage } from "react-icons/bi";
+import { BiStore, BiHomeAlt, BiCog, BiListUl, BiPackage, BiCategory } from "react-icons/bi";
 import  Link  from "next/link";
 import { useRouter } from "next/router";
 
@@ -23,6 +23,10 @@ export default function Nav() {
                 <Link href="/products" className={pathname.includes('/products') ? activeLink : inactiveLink}>
                     <BiPackage />
                     Products
+                </Link>
+                <Link href="/categories" className={pathname.includes('/categories') ? activeLink : inactiveLink}>
+                    <BiCategory />
+                    Categories
                 </Link>
                 <Link href="/orders" className={pathname.includes('/orders') ? activeLink : inactiveLink}>
                     <BiListUl />
