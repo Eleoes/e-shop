@@ -8,6 +8,7 @@ function Categories({swal}) {
     const [name, setName] = useState('');
     const [parentCategory, setParentCategory] = useState('');
     const [categories, setCategories] = useState([]);
+    const [properties, setProperties] = useState([]);
 
     useEffect(() => {
         fetchCategories();
@@ -21,7 +22,14 @@ function Categories({swal}) {
 
     async function saveCategory(e) {
         e.preventDefault();
-        const data = {name, parentCategory};
+        const data = {
+            name, 
+            parentCategory, 
+            properties: properties.map(p => ({
+                name:p.name, 
+                values:p.values.split(','),
+            })),
+        };
 
         if (isEditing) {
             data._id = isEditing._id;
@@ -32,6 +40,7 @@ function Categories({swal}) {
         }
         setName('');
         setParentCategory('');
+        setProperties([]);
         fetchCategories();
     }
 
@@ -39,6 +48,11 @@ function Categories({swal}) {
         setIsEditing(category);
         setName(category.name);
         setParentCategory(category.parent?._id);
+        setProperties(
+            category.properties.map(({name, values}) => ({
+                name,
+                values: values.join(','),
+            })));
     }
 
     function deleteCategory(category){
@@ -58,30 +72,120 @@ function Categories({swal}) {
             }
         });
     }
+
+    function addProperty(){
+        setProperties(prev => {
+            return [...prev, {name:'',values:'',properties}];
+        });
+    }
+
+    function handlePropertyNameChange(index, property, newName) {
+        // console.log({index, property, newName});
+        setProperties(prev => {
+            const properties = [...prev];
+            properties[index].name = newName;
+            return properties;
+        });
+    }
+
+    function handlePropertyValuesChange(index, property, newValues) {
+        // console.log({index, property, newValues});
+        setProperties(prev => {
+            const properties = [...prev];
+            properties[index].values = newValues;
+            return properties;
+        });
+    }
     
+    function removeProperty(indexToRemove) {
+        setProperties(prev => {
+            return [...prev].filter((p, pIndex) => {
+                return pIndex !== indexToRemove;
+            });
+        })
+    }
+
     return (
         <Layout>
             <h1>Categories</h1>
             <label>{isEditing ? `Edit category ${isEditing.name}` : 'Create new category'}</label>
-            <form onSubmit={saveCategory}className="flex gap-1">
-                <input 
-                    className="mb-0" 
-                    type="text" 
-                    placeholder={'Category name'}
-                    onChange={e => setName(e.target.value)}
-                    value={name}
-                />
-                <select 
-                    className="mb-0" 
-                    onChange={e => setParentCategory(e.target.value)}
-                    value={parentCategory}
+            <form onSubmit={saveCategory}className="">
+                <div className="flex gap-1">
+                    <input 
+                        className="" 
+                        type="text" 
+                        placeholder={'Category name'}
+                        onChange={e => setName(e.target.value)}
+                        value={name}
+                    />
+                    <select 
+                        className="" 
+                        onChange={e => setParentCategory(e.target.value)}
+                        value={parentCategory}
+                        >
+                        <option value="">No parent category</option>
+                        {categories.length > 0 && categories.map(category => (
+                            <option key={category._id} value={category._id}>{category.name}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="mb-2">
+                    <label className="block">Properties</label>
+                    <button 
+                        type="button" 
+                        className="btn-default text-sm mb-2"
+                        onClick={addProperty}
                     >
-                    <option value="">No parent category</option>
-                    {categories.length > 0 && categories.map(category => (
-                        <option key={category._id} value={category._id}>{category.name}</option>
+                        Add new property
+                    </button>
+                    {properties.length > 0 && properties.map((property, index) => (
+                        <div key={property._id} className="flex gap-1 mb-2">
+                            <input 
+                                type="text" 
+                                value={property.name}
+                                className="mb-0" 
+                                onChange={e => handlePropertyNameChange(index, property, e.target.value)}
+                                placeholder="Property name (example: color)" 
+                            />
+                            <input 
+                                type="text" 
+                                value={property.values} 
+                                className="mb-0" 
+                                onChange={e => handlePropertyValuesChange(index, property, e.target.value)}
+                                placeholder="Values, comma separated" 
+                            />
+                            <button 
+                                className="btn-default"
+                                type="button"
+                                onClick={() => removeProperty(index)}
+                            >
+                                Remove
+                            </button>
+                        </div>
                     ))}
-                </select>
-                <button type="submit" className="btn-primary">Save</button>
+                </div>
+                <div className="flex gap-1">
+                    {isEditing && (
+                        <button 
+                            className="btn-default"
+                            type="button"
+                            onClick={() => {
+                                setIsEditing(null);
+                                setName('');
+                                setParentCategory('');
+                                setProperties([]);
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    )}
+                    <button 
+                        type="submit" 
+                        className="btn-primary"
+                    >
+                        Save
+                    </button>
+                </div>
             </form>
             <table className="basic mt-4">
                 <thead>
