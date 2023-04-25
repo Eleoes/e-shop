@@ -115,20 +115,20 @@ export default function ProductForm({
                 ))}
             </select>
             {propertiesToFill.length > 0 && propertiesToFill.map(p => (
-                <div key={''} className="flex gap-1">
+                <div key={''} className="">
+                    <label>{p.name[0].toUpperCase()+p.name.substring(1)}</label>
                     <div>
-                        {p.name}
+                        <select 
+                            onChange={e => 
+                                setProductProps(p.name, e.target.value)
+                                } 
+                            value={productProperties[p.name]}
+                        >
+                            {p.values.map(v => (
+                                <option key={''}value={v}>{v}</option>
+                            ))}
+                        </select>
                     </div>
-                    <select 
-                        onChange={e => 
-                            setProductProps(p.name, e.target.value)
-                            } 
-                        value={productProperties[p.name]}
-                    >
-                        {p.values.map(v => (
-                            <option key={''}value={v}>{v}</option>
-                        ))}
-                    </select>
                 </div>
             ))}
             <label>Images</label>
@@ -139,8 +139,8 @@ export default function ProductForm({
                     className="flex flex-wrap gap-1"
                 >
                     {!!images?.length && images.map(link => (
-                        <div key={link} className="h-24">
-                            <img src={link} alt="" className="rounded-lg"/>
+                        <div key={link} className="h-24 bg-white p-3 shadow-sm rounded-md border border-gray-200">
+                            <img src={link} alt="" className="rounded-md"/>
                         </div>
                     ))}
                 </ReactSortable>
@@ -149,9 +149,9 @@ export default function ProductForm({
                         <Spinner />
                     </div>
                 )}
-                <label className="w-24 h-24 flex flex-col gap-1 items-center justify-center text-gray-500 rounded-lg cursor-pointer bg-gray-200">
+                <label className="w-24 h-24 flex flex-col gap-1 items-center justify-center rounded-md cursor-pointer bg-white shadow-sm border border-gray-200 text-primary">
                     <BiUpload />
-                    <span className="text-sm">Upload</span>
+                    <span className="text-sm">Add Image</span>
                     <input type="file" onChange={uploadImages}className="hidden"/> 
                 </label>
             </div>
